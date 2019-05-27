@@ -6,14 +6,17 @@ import render from "react-test-renderer";
 
 const AppContext = React.createContext({});
 
-class StateProvider extends Truth {
+class State {
+  value: string = ""
+  a: number = 1
+}
+
+class StateProvider extends Truth<State> {
   constructor(props) {
     super(props, AppContext);
   }
   async testAction(newValue) {
-    console.log(this.state);
     await this.setState({ ...this.state, testAction: "loading" });
-    console.log(this.state);
     return {
       ...this.state,
       testAction: "completed",
@@ -38,8 +41,10 @@ const Comp = () => {
 
 class App extends React.Component {
   render() {
+    const initialState = new State()
+    console.log(initialState)
     return (
-      <StateProvider actionsStatus={true} initialState={{ a: 1 }}>
+      <StateProvider actionsStatus={true} initialState={initialState}>
         <Comp />
       </StateProvider>
     );

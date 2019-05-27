@@ -14,9 +14,10 @@ Create the StateProvider and the hook (useAppState)
 import React from "react";
 import ReactTruth, { withAppState } from "react-truth";
 
-interface State {
-  public query?: object;
-  public someValue?: string;
+export class State {
+  query: object;
+  someValue: string = "initial from state class";
+  anotherValue?: string;
 }
 
 const AppContext = React.createContext({});
@@ -58,16 +59,17 @@ Wrap the App with the provider
 
 ```jsx
 import React, {Component} from "react";
-import {StateProvider} from "./state";
+import {StateProvider, State} from "./state";
 import App from "App";
 
 class MyApp extends Component {
   public render() {
     const { query } = this.props.location;
+    const initial = new State();
     return (
       <StateProvider
         externalState={{ query }}
-        initialState={{ someValue: "initial" }}
+        initialState={{ ...initial, anotherValue: "initial from app" }}
         persist={true}
         actionsStatus={true}
       >
