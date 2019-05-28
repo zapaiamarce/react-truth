@@ -60,7 +60,8 @@ class ActionProvider<S = any> extends PureComponent<ProviderProps, S> {
     /* Persistencia */
     const { persist, persistanceKey } = props;
     const persitedState = store.get(persistanceKey) || {};
-    this.state = persist ? { ...persitedState, ...initialState } : initialState;
+    this.state = persist && persitedState ? persitedState : initialState;
+
     this.Context = Context;
     this.wrapMethods();
     this.log(INIT, null, null);
@@ -93,6 +94,10 @@ class ActionProvider<S = any> extends PureComponent<ProviderProps, S> {
     return new Promise(resolve => {
       super.setState(state, resolve);
     });
+  }
+  public flushPersisted() {
+    const { persistanceKey } = this.props;
+    store.remove(persistanceKey);    
   }
   public async setActionStatus(methodName, status) {
     const { actionsStatus } = this.props;
@@ -138,6 +143,9 @@ class ActionProvider<S = any> extends PureComponent<ProviderProps, S> {
       [`${actionName}Completed`]: stateName === COMPLETED,
       [`${actionName}Failed`]: stateName === FAILED
     });
+  }
+  public useState(){
+    return useContext(this.context);
   }
   public render() {
     const { Provider } = this.Context;
