@@ -1,119 +1,65 @@
-// tslint:disable:no-console
-import { difference, pick } from "lodash";
-import React, { PureComponent, useContext } from "react";
+import { defaults, difference } from "lodash"
+import { useState } from "react"
 import store from "store";
-
-interface ProviderProps {
-  initialState?: object;
-  externalState?: object;
-  persistanceKey: string;
-  persist: boolean;
-  actionsStatus: boolean;
-}
 
 const INIT = "INIT";
 export const FIRED = "FIRED";
 export const COMPLETED = "COMPLETED";
 export const FAILED = "FAILED";
 
-/* se omiten estos metodos de la instancia al wrappear
- componentDidMount no está en esta lista porque
- queremos que la respuesta pueda impactar en el state
- */
-
-const dontWrap = [
-  "constructor",
-  "render",
-  "componentWillMount",
-  "componentWillReceiveProps",
-  "shouldComponentUpdate",
-  "componentWillUpdate",
-  "componentDidUpdate",
-  "componentWillUnmount"
-];
-
+// redux dev tools
 const win = typeof window !== "undefined" && (window as any);
 const devTools =
   win.__REDUX_DEVTOOLS_EXTENSION__ &&
   win.__REDUX_DEVTOOLS_EXTENSION__.connect();
 
-class ActionProvider<S = any> extends PureComponent<ProviderProps, S> {
-  public static defaultProps = {
-    persist: false,
-    persistanceKey: "persisted-state",
-    initialState: {},
-    actionsStatus: false
-  };
-  public static getDerivedStateFromProps(props) {
-    /* el external state siempre pisa el state interno
-     * ejemplo: url, queryParams
-     * (la verdad está afuera)
-     */
-    const { externalState } = props;
-    return externalState || null;
-  }
-  public Context;
-  constructor(props: ProviderProps, Context) {
-    super(props);
-    const { initialState } = props;
+class Settings {
+  persist?: boolean = false
+  persistanceKey?: string = "persisted-state"
+  actionsStatus?: boolean = false
+}
+
+
+class Truth <State = any> {
+  protected state: State
+  private settings: any
+  private hookSetState(any){}
+  public onLoad() {}
+  constructor(initialState: State = {} as any, settings: Settings = {}) {
+    this.settings = defaults(settings, new Settings())
 
     /* Persistencia */
-    const { persist, persistanceKey } = props;
-    const persitedState = store.get(persistanceKey) || {};
+    const { persist, persistanceKey } = this.settings;
+    const persitedState = store.get(persistanceKey);
     this.state = persist && persitedState ? persitedState : initialState;
 
-    this.Context = Context;
     this.wrapMethods();
     this.log(INIT, null, null);
+    this.onLoad()
   }
-  public persistState() {
-    const { persist, persistanceKey } = this.props;
-    if (persist) {
-      store.set(persistanceKey, this.state);
+  public async setState(newState) {
+    this.state = {
+      ...this.state,
+      ...newState
     }
+    this.hookSetState(this.state)
+    return this.state
   }
-  public componentDidUpdate() {
-    const { externalState } = this.props;
-    this.log("componentDidUpdate", { externalState }, COMPLETED);
-    this.persistState();
+  public useState(): [State, this] {
+    this.hookSetState = useState()[1]
+    console.log("this.state", this.state)
+    return [this.state, this];
   }
-  public log(actionName, args, status) {
-    if (actionName === INIT && devTools) {
-      devTools.init(this.state);
-    } else if (devTools && actionName && status) {
-      devTools.send(
-        {
-          payload: args,
-          type: `${actionName}:${status}`
-        },
-        this.state
-      );
-    }
-  }
-  public setState(state) {
-    return new Promise(resolve => {
-      super.setState(state, resolve);
-    });
-  }
-  public flushPersisted() {
-    const { persistanceKey } = this.props;
-    store.remove(persistanceKey);    
-  }
-  public async setActionStatus(methodName, status) {
-    const { actionsStatus } = this.props;
-    const statusMethodName = methodName + "Status";
-    if (actionsStatus) {
-      return this.setState(prevState => ({
-        ...prevState,
-        [statusMethodName]: status
-      }));
-    }
+  public getState(): State {
+    return this.state;
   }
   public wrapMethods() {
     /* wrapea todos los metodos (externos)
      * logea en redux y ademas graba la respuesta
      * de la promesa en el state
      */
+
+    const dontWrap = ["constructor"];
     const objPrototype = Object.getPrototypeOf(this);
     const methods = Object.getOwnPropertyNames(objPrototype);
     const toBind = difference(methods, dontWrap);
@@ -126,7 +72,7 @@ class ActionProvider<S = any> extends PureComponent<ProviderProps, S> {
         this.log(m, args, FIRED);
         try {
           const response = await method.apply(this, [...args]);
-          await this.setState(() => response);
+          await this.setState(response);
           await this.setActionStatus(m, COMPLETED);
           this.log(m, args, COMPLETED);
         } catch (error) {
@@ -144,22 +90,32 @@ class ActionProvider<S = any> extends PureComponent<ProviderProps, S> {
       [`${actionName}Failed`]: stateName === FAILED
     });
   }
-  public useState(){
-    return useContext(this.context);
+  public flushPersisted() {
+    const { persistanceKey } = this.settings;
+    store.remove(persistanceKey);
   }
-  public render() {
-    const { Provider } = this.Context;
-    return (
-      <Provider value={[this.state, this]}>{this.props.children}</Provider>
-    );
+  public async setActionStatus(methodName, status) {
+    const { actionsStatus } = this.settings;
+    const statusMethodName = methodName + "Status";
+    if (actionsStatus) {
+      return this.setState({
+        ...this.state,
+        [statusMethodName]: status
+      });
+    }
+  }
+  public log(actionName, args, status) {
+    if (actionName === INIT && devTools) {
+      devTools.init(this.state);
+    } else if (devTools && actionName && status) {
+      devTools.send(
+        {
+          payload: args,
+          type: `${actionName}:${status}`
+        },
+        this.state
+      );
+    }
   }
 }
-
-export function withAppState<ActionType = any>(Context: React.Context<any>) {
-  return (keys?: string[]): [any, ActionType] => {
-    const [state, actions] = useContext(Context) as any;
-    return keys ? [pick(state, keys), actions] : [state, actions];
-  };
-}
-
-export default ActionProvider;
+export default Truth

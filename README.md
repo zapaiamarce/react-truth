@@ -12,7 +12,7 @@ Create the StateProvider and the hook (useAppState)
 
 ```jsx
 import React from "react";
-import ReactTruth, { withAppState } from "react-truth";
+import ReactTruth from "react-truth";
 
 export class State {
   query: object;
@@ -20,13 +20,8 @@ export class State {
   anotherValue?: string;
 }
 
-const AppContext = React.createContext({});
-
-export class StateProvider extends ReactTruth<State> {
-  constructor(props) {
-    super(props, AppContext);
-  }
-  public async componentDidMount() {
+export class AppState extends ReactTruth<State> {
+  public async onLoad() {
     this.setState({
       ...this.state,
       someValue: "mounted"
@@ -49,7 +44,10 @@ export class StateProvider extends ReactTruth<State> {
   }
 }
 
-export const useAppState = withAppState<StateProvider>(AppContext);
+const initialState = {}
+const settings = {}
+
+export const appState = new AppState(initialState, settings)
 
 ```
 
@@ -59,8 +57,10 @@ Wrap the App with the provider
 
 ```jsx
 import React, {Component} from "react";
-import {StateProvider, State} from "./state";
+import { appState } from "./state";
 import App from "App";
+
+// TODO: Seguir doc
 
 class MyApp extends Component {
   public render() {

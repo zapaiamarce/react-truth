@@ -1,18 +1,21 @@
 import test from "ava";
 import React from "react";
 import Truth from "./";
-import NewTruth from "./new";
 
 import render from "react-test-renderer";
 
 class State {
   value?: string = ""
   a: number = 1
+  fromOnLoadAction?: boolean
 }
 
-class AppState extends NewTruth<State>{
-  async onLoad() {
-    console.log("new truth loaded")
+class AppState extends Truth<State>{
+  async onLoad(): Promise<State> {
+    return ({
+      ...this.state,
+      fromOnLoadAction: true
+    })
   }
   async testAction(newValue: string): Promise<State> {
     await this.setState({ ...this.state, value: "test action init" });
@@ -24,12 +27,12 @@ class AppState extends NewTruth<State>{
 }
 
 
-const appState = new AppState({
-  a: 1
-})
+
+const appState = new AppState()
 
 const Comp = () => {
   const [state, actions] = appState.useState();
+
   return (
     <div>
       <h2>Component</h2>
@@ -40,11 +43,18 @@ const Comp = () => {
 };
 
 
-test.serial("persistance, ", async t => {
+test.serial("basic, ", async t => {
   const comp = render.create(<Comp />);
   await comp.root.findByType("button").props.onClick();
   const tree = comp.toJSON();
   t.log(tree);
+  t.truthy(true)
+  // t.snapshot(tree);
+});
+
+
+test.serial("persistance, ", async t => {
+  t.log(appState.getState());
   t.truthy(true)
   // t.snapshot(tree);
 });
