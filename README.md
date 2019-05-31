@@ -83,6 +83,7 @@ Generate automatic values in the state for actions status: {actionName}Status
 
 ```jsx
 import { appState } from "./state";
+import { FIRED, FAILED, COMPLETED } from "react-truth"
 
 export default () => {
   const [state, actions] = appState.useState();
@@ -91,11 +92,11 @@ export default () => {
   return (
     <div>
       <button onClick={handleClick}>
-        {state.apiCallStatus == state.FIRED ? (
+        {state.apiCallStatus == FIRED ? (
           <span>The api call is happening</span>
-        ) : state.apiCallStatus == state.FAILED ? (
+        ) : state.apiCallStatus == FAILED ? (
           <span>Something went wrong</span>
-        ) : state.apiCallStatus == state.COMPLETED ? (
+        ) : state.apiCallStatus == COMPLETED ? (
           <span>Everything went ok!</span>
         ) : (
           <span>nothing happens yet</span>

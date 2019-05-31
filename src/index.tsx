@@ -14,16 +14,16 @@ class Settings {
   actionsStatus?: boolean = false
 }
 
+export const INIT = "INIT";
+export const FIRED = "FIRED"
+export const COMPLETED = "COMPLETED"
+export const FAILED = "FAILED"
 
 class Truth <State = any> {
   protected state: State
   private settings: Settings
   private hookSetState(any){}
   public onLoad() {}
-  public INIT = "INIT";
-  public FIRED = "FIRED"
-  public COMPLETED = "COMPLETED"
-  public FAILED = "FAILED"
   constructor(initialState: State = {} as any, settings: Settings = {}) {
     this.settings = defaults(settings, new Settings());
     /* Persistencia */
@@ -32,7 +32,7 @@ class Truth <State = any> {
     this.state = persist && persitedState ? persitedState : initialState;
 
     this.wrapMethods();
-    this.log(this.INIT, null, null);
+    this.log(INIT, null, null);
     this.onLoad()
   }
   public async setState(newState) {
@@ -66,26 +66,19 @@ class Truth <State = any> {
       const method = objPrototype[m];
 
       objPrototype[m] = async (...args) => {
-        await this.setActionStatus(m, this.FIRED);
-        this.log(m, args, this.FIRED);
+        await this.setActionStatus(m, FIRED);
+        this.log(m, args, FIRED);
         try {
           const response = await method.apply(this, [...args]);
           await this.setState(response);
-          await this.setActionStatus(m, this.COMPLETED);
-          this.log(m, args, this.COMPLETED);
+          await this.setActionStatus(m, COMPLETED);
+          this.log(m, args, COMPLETED);
         } catch (error) {
-          await this.setActionStatus(m, this.FAILED);
-          this.log(m, args, this.FAILED);
+          await this.setActionStatus(m, FAILED);
+          this.log(m, args, FAILED);
           console.error(error);
         }
       };
-    });
-  }
-  public async setActionState(actionName: string, stateName: string) {
-    return this.setState({
-      [`${actionName}InProgress`]: stateName === this.FIRED,
-      [`${actionName}Completed`]: stateName === this.COMPLETED,
-      [`${actionName}Failed`]: stateName === this.FAILED
     });
   }
   public persistState() {
@@ -109,7 +102,7 @@ class Truth <State = any> {
     }
   }
   public log(actionName, args, status) {
-    if (actionName === this.INIT && devTools) {
+    if (actionName === INIT && devTools) {
       devTools.init(this.state);
     } else if (devTools && actionName && status) {
       devTools.send(
