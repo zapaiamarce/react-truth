@@ -2,7 +2,7 @@
   <img width="200" src="logo.png" />
 </p>
 
-Minimum state manager, using Hooks.
+Minimum state manager using hooks
 
 [![CircleCI](https://circleci.com/gh/zapaiamarce/react-truth.svg?style=shield)](https://circleci.com/gh/zapaiamarce/react-truth) [![npm](https://img.shields.io/npm/v/react-truth/latest.svg?color=brightgreen)](https://www.npmjs.com/package/react-truth)
 
