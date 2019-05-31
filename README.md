@@ -1,18 +1,15 @@
-<p align="center">
-  <img width="200" src="logo.png" />
-</p>
+![](logo.png)
 
 Minimum state manager using hooks
 
 [![CircleCI](https://circleci.com/gh/zapaiamarce/react-truth.svg?style=shield)](https://circleci.com/gh/zapaiamarce/react-truth) [![npm](https://img.shields.io/npm/v/react-truth/latest.svg?color=brightgreen)](https://www.npmjs.com/package/react-truth)
 
-## Getting started
 
-#### state.tsx
+### Step 1: Create a truth instance
 
-Create a truth instance
 
 ```jsx
+// state.tsx
 import ReactTruth from "react-truth";
 
 export class State {
@@ -20,7 +17,7 @@ export class State {
   anotherValue?: string;
 }
 
-export class AppState extends ReactTruth<State> {
+export class Truth extends ReactTruth<State> {
   public async onLoad() {
     this.setState({
       ...this.state,
@@ -47,18 +44,20 @@ export class AppState extends ReactTruth<State> {
 const initialState = new State();
 const settings = {};
 
-export const appState = new AppState(initialState, settings);
+export const myTruth = new Truth(initialState, settings);
+
+export default myTruth;
 ```
 
-#### Component.tsx
 
-Hook your components.
+### Step 2: Hook your components.
 
 ```jsx
-import { appState } from "./state";
+// Component.tsx
+import { useState } from "./state";
 
 export default () => {
-  const [state, actions] = appState.useState();
+  const [state, actions] = useState();
   const handleClick = () => actions.testAction(Math.random());
 
   return (
@@ -82,11 +81,11 @@ Persist the state in localStorage and recover it when the state starts.
 Generate automatic values in the state for actions status: {actionName}Status
 
 ```jsx
-import { appState } from "./state";
+import { useState } from "./state";
 import { FIRED, FAILED, COMPLETED } from "react-truth"
 
 export default () => {
-  const [state, actions] = appState.useState();
+  const [state, actions] = useState();
   const handleClick = () => actions.apiCall(Math.random());
 
   return (
