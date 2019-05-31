@@ -54,10 +54,10 @@ export default myTruth;
 
 ```jsx
 // Component.tsx
-import { useState } from "./state";
+import appState from "./state";
 
 export default () => {
-  const [state, actions] = useState();
+  const [state, actions] = appState.useState();
   const handleClick = () => actions.testAction(Math.random());
 
   return (
