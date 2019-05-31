@@ -1,4 +1,4 @@
-![](logo.png)
+![Logo](https://res.cloudinary.com/iunigo/image/upload/c_scale,q_100,w_200/v1559334903/react-truth/React_Truth_color.png)
 
 Minimum state manager using hooks
 
