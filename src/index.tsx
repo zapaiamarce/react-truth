@@ -2,11 +2,6 @@ import { defaults, difference } from "lodash"
 import { useState } from "react"
 import store from "store";
 
-const INIT = "INIT";
-export const FIRED = "FIRED";
-export const COMPLETED = "COMPLETED";
-export const FAILED = "FAILED";
-
 // redux dev tools
 const win = typeof window !== "undefined" && (window as any);
 const devTools =
@@ -25,6 +20,10 @@ class Truth <State = any> {
   private settings: any
   private hookSetState(any){}
   public onLoad() {}
+  public INIT = "INIT";
+  public FIRED = "FIRED"
+  public COMPLETED = "COMPLETED"
+  public FAILED = "FAILED"
   constructor(initialState: State = {} as any, settings: Settings = {}) {
     this.settings = defaults(settings, new Settings())
 
@@ -34,7 +33,7 @@ class Truth <State = any> {
     this.state = persist && persitedState ? persitedState : initialState;
 
     this.wrapMethods();
-    this.log(INIT, null, null);
+    this.log(this.INIT, null, null);
     this.onLoad()
   }
   public async setState(newState) {
@@ -47,7 +46,6 @@ class Truth <State = any> {
   }
   public useState(): [State, this] {
     this.hookSetState = useState()[1]
-    console.log("this.state", this.state)
     return [this.state, this];
   }
   public getState(): State {
@@ -68,16 +66,16 @@ class Truth <State = any> {
       const method = objPrototype[m];
 
       objPrototype[m] = async (...args) => {
-        await this.setActionStatus(m, FIRED);
-        this.log(m, args, FIRED);
+        await this.setActionStatus(m, this.FIRED);
+        this.log(m, args, this.FIRED);
         try {
           const response = await method.apply(this, [...args]);
           await this.setState(response);
-          await this.setActionStatus(m, COMPLETED);
-          this.log(m, args, COMPLETED);
+          await this.setActionStatus(m, this.COMPLETED);
+          this.log(m, args, this.COMPLETED);
         } catch (error) {
-          await this.setActionStatus(m, FAILED);
-          this.log(m, args, FAILED);
+          await this.setActionStatus(m, this.FAILED);
+          this.log(m, args, this.FAILED);
           console.error(error);
         }
       };
@@ -85,9 +83,9 @@ class Truth <State = any> {
   }
   public async setActionState(actionName: string, stateName: string) {
     return this.setState({
-      [`${actionName}InProgress`]: stateName === FIRED,
-      [`${actionName}Completed`]: stateName === COMPLETED,
-      [`${actionName}Failed`]: stateName === FAILED
+      [`${actionName}InProgress`]: stateName === this.FIRED,
+      [`${actionName}Completed`]: stateName === this.COMPLETED,
+      [`${actionName}Failed`]: stateName === this.FAILED
     });
   }
   public flushPersisted() {
@@ -105,7 +103,7 @@ class Truth <State = any> {
     }
   }
   public log(actionName, args, status) {
-    if (actionName === INIT && devTools) {
+    if (actionName === this.INIT && devTools) {
       devTools.init(this.state);
     } else if (devTools && actionName && status) {
       devTools.send(

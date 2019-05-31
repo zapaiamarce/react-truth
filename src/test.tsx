@@ -26,11 +26,12 @@ class AppState extends Truth<State>{
   }
 }
 
-
-
-const appState = new AppState()
+const appState = new AppState(new State(), {
+  actionsStatus: true
+})
 
 const Comp = () => {
+  console.log("Comp")
   const [state, actions] = appState.useState();
 
   return (
@@ -54,7 +55,7 @@ test.serial("basic, ", async t => {
 
 
 test.serial("persistance, ", async t => {
-  t.log(appState.getState());
+  t.log("get state", appState.getState());
   t.truthy(true)
   // t.snapshot(tree);
 });

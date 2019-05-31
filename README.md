@@ -1,6 +1,8 @@
-![](logo.png)
+<p align="center">
+  <img width="200" src="logo.png" />
+</p>
 
-Minimum state manager, using Context and Hooks.
+Minimum state manager, using Hooks.
 
 [![CircleCI](https://circleci.com/gh/zapaiamarce/react-truth.svg?style=shield)](https://circleci.com/gh/zapaiamarce/react-truth) [![npm](https://img.shields.io/npm/v/react-truth/latest.svg?color=brightgreen)](https://www.npmjs.com/package/react-truth)
 
@@ -8,10 +10,9 @@ Minimum state manager, using Context and Hooks.
 
 #### state.tsx
 
-Create the StateProvider and the hook (useAppState)
+Create a truth instance
 
 ```jsx
-import React from "react";
 import ReactTruth from "react-truth";
 
 export class State {
@@ -44,42 +45,10 @@ export class AppState extends ReactTruth<State> {
   }
 }
 
-const initialState = {}
-const settings = {}
+const initialState = {};
+const settings = {};
 
-export const appState = new AppState(initialState, settings)
-
-```
-
-#### App.tsx
-
-Wrap the App with the provider
-
-```jsx
-import React, {Component} from "react";
-import { appState } from "./state";
-import App from "App";
-
-// TODO: Seguir doc
-
-class MyApp extends Component {
-  public render() {
-    const { query } = this.props.location;
-    const initial = new State();
-    return (
-      <StateProvider
-        externalState={{ query }}
-        initialState={{ ...initial, anotherValue: "initial from app" }}
-        persist={true}
-        actionsStatus={true}
-      >
-        <App />
-      </StateProvider>;
-    );
-  }
-}
-
-export default MyApp;
+export const state = new AppState(initialState, settings);
 ```
 
 #### Component.tsx
@@ -87,10 +56,10 @@ export default MyApp;
 Hook your components.
 
 ```jsx
-import { useAppState } from "./state";
+import { state } from "./state";
 
 export default () => {
-  const [state, actions] = useAppState();
+  const [state, actions] = state.useState();
   const handleClick = () => actions.testAction(Math.random());
 
   return (
@@ -103,15 +72,7 @@ export default () => {
 };
 ```
 
-## Props
-
-### externalState
-
-Let inject external values to the state. This cannot be overriden for any action.
-
-### initialState
-
-Just the initial state.
+## Settings
 
 ### persist
 
@@ -119,23 +80,23 @@ Persist the state in localStorage and recover it when the state starts.
 
 ### actionsStatus
 
-Generate automatic values in the state for actions status.
+Generate automatic values in the state for actions status: {actionName}Status
 
 ```jsx
-import { useAppState, FIRED, COMPLETED, FAILED } from "./state";
+import { state } from "./state";
 
 export default () => {
-  const [state, actions] = useAppState();
+  const [state, actions] = state.useState();
   const handleClick = () => actions.apiCall(Math.random());
 
   return (
     <div>
       <button onClick={handleClick}>
-        {state.apiCallStatus == FIRED ? (
+        {state.apiCallStatus == state.FIRED ? (
           <span>The api call is happening</span>
-        ) : state.apiCallStatus == FAILED ? (
+        ) : state.apiCallStatus == state.FAILED ? (
           <span>Something went wrong</span>
-        ) : state.apiCallStatus == COMPLETED ? (
+        ) : state.apiCallStatus == state.COMPLETED ? (
           <span>Everything went ok!</span>
         ) : (
           <span>nothing happens yet</span>
