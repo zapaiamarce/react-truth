@@ -16,7 +16,6 @@ Create a truth instance
 import ReactTruth from "react-truth";
 
 export class State {
-  query: object;
   someValue: string = "initial from state class";
   anotherValue?: string;
 }
@@ -45,10 +44,10 @@ export class AppState extends ReactTruth<State> {
   }
 }
 
-const initialState = {};
+const initialState = new State();
 const settings = {};
 
-export const state = new AppState(initialState, settings);
+export const appState = new AppState(initialState, settings);
 ```
 
 #### Component.tsx
@@ -56,10 +55,10 @@ export const state = new AppState(initialState, settings);
 Hook your components.
 
 ```jsx
-import { state } from "./state";
+import { appState } from "./state";
 
 export default () => {
-  const [state, actions] = state.useState();
+  const [state, actions] = appState.useState();
   const handleClick = () => actions.testAction(Math.random());
 
   return (
@@ -83,10 +82,10 @@ Persist the state in localStorage and recover it when the state starts.
 Generate automatic values in the state for actions status: {actionName}Status
 
 ```jsx
-import { state } from "./state";
+import { appState } from "./state";
 
 export default () => {
-  const [state, actions] = state.useState();
+  const [state, actions] = appState.useState();
   const handleClick = () => actions.apiCall(Math.random());
 
   return (
