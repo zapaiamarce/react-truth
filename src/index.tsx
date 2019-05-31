@@ -17,7 +17,7 @@ class Settings {
 
 class Truth <State = any> {
   protected state: State
-  private settings: any
+  private settings: Settings
   private hookSetState(any){}
   public onLoad() {}
   public INIT = "INIT";
@@ -25,8 +25,7 @@ class Truth <State = any> {
   public COMPLETED = "COMPLETED"
   public FAILED = "FAILED"
   constructor(initialState: State = {} as any, settings: Settings = {}) {
-    this.settings = defaults(settings, new Settings())
-
+    this.settings = defaults(settings, new Settings());
     /* Persistencia */
     const { persist, persistanceKey } = this.settings;
     const persitedState = store.get(persistanceKey);
@@ -41,7 +40,8 @@ class Truth <State = any> {
       ...this.state,
       ...newState
     }
-    this.hookSetState(this.state)
+    this.hookSetState(this.state);
+    this.persistState();
     return this.state
   }
   public useState(): [State, this] {
@@ -88,6 +88,12 @@ class Truth <State = any> {
       [`${actionName}Failed`]: stateName === this.FAILED
     });
   }
+  public persistState() {
+    const { persist, persistanceKey } = this.settings;
+    if (persist) {
+      store.set(persistanceKey, this.state);
+    }
+  }
   public flushPersisted() {
     const { persistanceKey } = this.settings;
     store.remove(persistanceKey);
@@ -116,4 +122,5 @@ class Truth <State = any> {
     }
   }
 }
+
 export default Truth

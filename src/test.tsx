@@ -27,7 +27,7 @@ class AppState extends Truth<State>{
 }
 
 const appState = new AppState(new State(), {
-  actionsStatus: true
+  persist: true
 })
 
 const Comp = () => {

@@ -26,7 +26,7 @@ export class AppState extends ReactTruth<State> {
     this.setState({
       ...this.state,
       someValue: "mounted"
-    })
+    });
   }
   public async testAction(newValue): Promise<State> {
     // you can set the state any time you need
