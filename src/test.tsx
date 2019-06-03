@@ -43,14 +43,28 @@ const Comp = () => {
   );
 };
 
+const Dummy = () => (
+  <div>Dummy {Math.random()}</div>
+)
+
+
+const App = () => {
+  return (
+    <div>
+      <Comp></Comp>
+      <Dummy></Dummy>
+      <Comp></Comp>
+    </div>
+  );
+};
+
 
 test.serial("basic, ", async t => {
-  const comp = render.create(<Comp />);
-  await comp.root.findByType("button").props.onClick();
+  const comp = render.create(<App />);
+  await comp.root.findAllByType("button")[1].props.onClick();
   const tree = comp.toJSON();
   t.log(tree);
-  t.truthy(true)
-  // t.snapshot(tree);
+  t.truthy(true);
 });
 
 
