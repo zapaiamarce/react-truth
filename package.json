@@ -7,6 +7,7 @@
     "dist"
   ],
   "types": "dist/index.d.ts",
+  "repository": "github:zapaiamarce/react-truth",
   "keywords": [
     "react",
     "state management",
@@ -20,7 +21,8 @@
     "build": "rollup -c",
     "watch": "rollup -cw",
     "test": "ava",
-    "test:watch": "ava --watch --verbose"
+    "test:watch": "ava --watch --verbose",
+    "new-patch": "npm version patch && git push"
   },
   "ava": {
     "compileEnhancements": false,
