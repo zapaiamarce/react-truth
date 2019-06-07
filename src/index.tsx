@@ -33,16 +33,19 @@ class Truth <State = any> {
 
     this.wrapMethods();
     this.log(INIT, null, null);
-    this.onLoad()
+    this.onLoad();
   }
   public async setState(newState) {
+    return this.setStateSync(newState)
+  }
+  public setStateSync(newState) {
     this.state = {
       ...this.state,
       ...newState
     }
     this.hookSetState(this.state);
     this.persistState();
-    return this.state
+    return this.state;
   }
   public useState(): [State, this] {
     this.hookSetState = useState()[1]
@@ -64,7 +67,7 @@ class Truth <State = any> {
 
     toBind.forEach(m => {
       const method = objPrototype[m];
-
+      this.setActionStatus(m, null);
       objPrototype[m] = async (...args) => {
         await this.setActionStatus(m, FIRED);
         this.log(m, args, FIRED);
@@ -95,7 +98,7 @@ class Truth <State = any> {
     const { actionsStatus } = this.settings;
     const statusMethodName = methodName + "Status";
     if (actionsStatus) {
-      return this.setState({
+      return this.setStateSync({
         ...this.state,
         [statusMethodName]: status
       });

@@ -27,13 +27,12 @@ class AppState extends Truth<State>{
 }
 
 const appState = new AppState(new State(), {
-  persist: true
+  actionsStatus: true
 })
 
 const Comp = () => {
-  console.log("Comp")
   const [state, actions] = appState.useState();
-
+  console.log("Comp", state)
   return (
     <div>
       <h2>Component</h2>
