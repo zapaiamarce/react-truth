@@ -1,6 +1,6 @@
 {
   "name": "react-truth",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "description": "A tiny state manager",
