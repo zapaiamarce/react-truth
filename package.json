@@ -3,6 +3,7 @@
   "version": "0.1.11",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
+  "description": "A tiny state manager",
   "files": [
     "dist"
   ],

@@ -1,6 +1,6 @@
 ![Logo](https://res.cloudinary.com/iunigo/image/upload/c_scale,q_100,w_200/v1559334903/react-truth/React_Truth_color.png)
 
-Minimum state manager using hooks
+A tiny state manager.
 
 [![CircleCI](https://circleci.com/gh/zapaiamarce/react-truth.svg?style=shield)](https://circleci.com/gh/zapaiamarce/react-truth) [![npm](https://img.shields.io/npm/v/react-truth/latest.svg?color=brightgreen)](https://www.npmjs.com/package/react-truth)
 
