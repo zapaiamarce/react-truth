@@ -42,7 +42,10 @@ export class Truth extends ReactTruth<State> {
 }
 
 const initialState = new State();
-const settings = {};
+const settings = {
+  persist: true,
+  actionsStatus: true
+};
 
 export const myTruth = new Truth(initialState, settings);
 
@@ -72,11 +75,15 @@ export default () => {
 
 ## Settings
 
-### persist
+#### persist:boolean = false
 
 Persist the state in localStorage and recover it when the state starts.
 
-### actionsStatus
+#### persist:string = "persisted-state"
+
+Used to name the localStorage item. default.
+
+#### actionsStatus:boolean = false
 
 Generate automatic values in the state for actions status: {actionName}Status
 
