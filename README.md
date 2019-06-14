@@ -113,6 +113,10 @@ export default () => {
 };
 ```
 
+#### debug:boolean = false
+
+Log react-truth internals to the console
+
 ## Redux devtools integration
 
 Too see what is happening in the state, just open your redux devtools panel.

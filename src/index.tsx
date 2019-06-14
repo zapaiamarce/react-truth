@@ -1,5 +1,5 @@
 import { defaults, difference } from "lodash"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import store from "store";
 
 // redux dev tools
@@ -10,6 +10,7 @@ const devTools =
 
 class Settings {
   persist?: boolean = false
+  debug?: boolean = false
   persistanceKey?: string = "persisted-state"
   actionsStatus?: boolean = false
 }
@@ -19,11 +20,17 @@ export const FIRED = "FIRED"
 export const COMPLETED = "COMPLETED"
 export const FAILED = "FAILED"
 
-class Truth <State = any> {
+class Truth<State = any> {
   protected state: State
   private settings: Settings
-  private hookSetState(any){}
-  public onLoad() {}
+  private hooksListeners: any[] = []
+  private fireHooks() {
+    this.debug("hooksFired", this.hooksListeners.length)
+    this.hooksListeners.forEach((listener) => {
+      listener(this.state);
+    });
+  }
+  public onLoad() { }
   constructor(initialState: State = {} as any, settings: Settings = {}) {
     this.settings = defaults(settings, new Settings());
     /* Persistencia */
@@ -36,19 +43,29 @@ class Truth <State = any> {
     this.onLoad();
   }
   public async setState(newState) {
+    this.debug("setState", newState)
     return this.setStateSync(newState)
+  }
+  public debug(...params) {
+    return this.settings.debug && console.log('[truth] ', ...params)
   }
   public setStateSync(newState) {
     this.state = {
       ...this.state,
       ...newState
     }
-    this.hookSetState(this.state);
+    this.fireHooks();
     this.persistState();
     return this.state;
   }
   public useState(): [State, this] {
-    this.hookSetState = useState()[1]
+    const newListener = useState()[1]
+    useEffect(() => {
+      this.hooksListeners.push(newListener)
+      return () => {
+        this.hooksListeners = this.hooksListeners.filter(listener => listener !== newListener);
+      };
+    }, [])
     return [this.state, this];
   }
   public getState(): State {
@@ -105,6 +122,7 @@ class Truth <State = any> {
     }
   }
   public log(actionName, args, status) {
+    this.debug(actionName, status, args);
     if (actionName === INIT && devTools) {
       devTools.init(this.state);
     } else if (devTools && actionName && status) {
