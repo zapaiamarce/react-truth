@@ -4,9 +4,7 @@ A tiny state manager.
 
 [![CircleCI](https://circleci.com/gh/zapaiamarce/react-truth.svg?style=shield)](https://circleci.com/gh/zapaiamarce/react-truth) [![npm](https://img.shields.io/npm/v/react-truth/latest.svg?color=brightgreen)](https://www.npmjs.com/package/react-truth)
 
-
 ### Step 1: Create a truth instance
-
 
 ```jsx
 // state.tsx
@@ -52,7 +50,6 @@ export const myTruth = new Truth(initialState, settings);
 export default myTruth;
 ```
 
-
 ### Step 2: Hook your components.
 
 ```jsx
@@ -79,9 +76,11 @@ export default () => {
 
 Persist the state in localStorage and recover it when the state starts.
 
-#### persist:string = "persisted-state"
+#### persistanceKey:string = "persisted-state"
 
 Used to name the localStorage item. default.
+
+#### persistPick:string[] = null
 
 #### actionsStatus:boolean = false
 
@@ -89,7 +88,7 @@ Generate automatic values in the state for actions status: {actionName}Status
 
 ```jsx
 import { useState } from "./state";
-import { FIRED, FAILED, COMPLETED } from "react-truth"
+import { FIRED, FAILED, COMPLETED } from "react-truth";
 
 export default () => {
   const [state, actions] = useState();

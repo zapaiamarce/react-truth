@@ -12,10 +12,10 @@ class State {
 
 class AppState extends Truth<State>{
   async onLoad(): Promise<State> {
-    return ({
+    return {
       ...this.state,
       fromOnLoadAction: true
-    })
+    }
   }
   async testAction(newValue: string): Promise<State> {
     await this.setState({ ...this.state, value: "test action init" });
@@ -26,49 +26,62 @@ class AppState extends Truth<State>{
   }
 }
 
-const appState = new AppState(new State(), {
-  actionsStatus: true
+const createAppState = () => new AppState(new State(), {
+  actionsStatus: true,
+  persist: true,
+  debug: true
 })
 
-const Comp = () => {
-  const [state, actions] = appState.useState();
-  console.log("Comp", state)
-  return (
-    <div>
-      <h2>Component</h2>
-      <button onClick={async () => await actions.testAction("123")}>Test Button</button>
-      <div>{JSON.stringify(state)}</div>
-    </div>
-  );
-};
-
-const Dummy = () => (
-  <div>Dummy {Math.random()}</div>
-)
-
-
-const App = () => {
-  return (
-    <div>
-      <Comp></Comp>
-      <Dummy></Dummy>
-      <Comp></Comp>
-    </div>
-  );
-};
 
 
 test.serial("basic, ", async t => {
+  t.plan(1);
+  const appState = createAppState();
+
+  const Comp = () => {
+    const [state, actions] = appState.useState();
+    const { testAction } = actions
+    console.log("Comp", state)
+    return (
+      <div>
+        <button onClick={async () => await testAction("some value from comp action")}>{JSON.stringify(state)}</button>
+      </div>
+    );
+  };
+
+  const Dummy = () => (
+    <div>Dummy {Math.random()}</div>
+  )
+
+
+  const App = () => {
+    return (
+      <div>
+        <Comp></Comp>
+        <Dummy></Dummy>
+        <Comp></Comp>
+      </div>
+    );
+  };
+
   const comp = render.create(<App />);
-  await comp.root.findAllByType("button")[1].props.onClick();
-  const tree = comp.toJSON();
-  t.log(tree);
-  t.truthy(true);
+
+  return new Promise((resolve, rej) =>
+    setTimeout(async () => {
+      t.log("*****TIMEOUT")
+      await comp.root.findAllByType("button")[1].props.onClick();
+      const tree = comp.toJSON();
+      t.log(appState.getState());
+      t.log(tree);
+      t.truthy(true);
+      resolve()
+    }, 100)
+  ) as any
 });
 
-
-test.serial("persistance, ", async t => {
-  t.log("get state", appState.getState());
-  t.truthy(true)
-  // t.snapshot(tree);
-});
+// test.serial("persistance, ", async t => {
+//   const appState = createAppState();
+//   // t.log("get state", appState.getState());
+//   t.truthy(true)
+//   // t.snapshot(tree);
+// });
