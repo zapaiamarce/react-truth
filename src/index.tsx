@@ -1,5 +1,5 @@
 import { defaults, difference, pick } from "lodash";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import store from "store";
 
 // redux dev tools
@@ -10,6 +10,7 @@ const devTools =
 
 class Settings {
   persist?: boolean = false;
+  id?: string = "";
   persistPick?: string[] = [];
   persistanceKey?: string = "persisted-state";
   debug?: boolean = false;
@@ -26,7 +27,6 @@ class Truth<State = any> {
   private settings: Settings;
   private hooksListeners: any[] = [];
   private fireHooks() {
-    console.log("fireHooks()");
     if (this.hooksListeners.length) {
       this.debug("fireHooks()", this.hooksListeners.length);
     }
@@ -34,7 +34,8 @@ class Truth<State = any> {
       listener(this.state);
     });
   }
-  public onLoad() {}
+  public promise: any
+  public async onLoad(): Promise<State> { return this.state }
   constructor(initialState: State = {} as any, settings: Settings = {}) {
     this.settings = defaults(settings, new Settings());
 
@@ -47,13 +48,13 @@ class Truth<State = any> {
       ":: constructor()",
       persitedState ? "persisted" : "initialState"
     );
-    this.setState(initial);
 
+    this.promise = this.setState(initial).then(this.onLoad);
     this.log(INIT, null, null);
-    this.onLoad();
+
   }
   public debug(...params) {
-    return this.settings.debug && console.log("[truth]", ...params);
+    return this.settings.debug && console.log(`[truth ${this.settings.id}]`, ...params);
   }
   public async setState(newState) {
     this.debug("setState()", "\n", JSON.stringify(newState, null, "   "));
@@ -84,7 +85,7 @@ class Truth<State = any> {
     return this.state;
   }
   public withState(Com) {
-    return this.state;
+    return props => <Com {...props} state={this.state} />;
   }
   public wrapMethods() {
     /* wrapea todos los metodos (externos)
@@ -148,9 +149,9 @@ class Truth<State = any> {
   }
   public async setActionStatus(methodName, status) {
     const { actionsStatus } = this.settings;
-    const statusMethodName = methodName + "Status";
     if (actionsStatus) {
-      return this.setStateRaw({
+      const statusMethodName = methodName + "Status";
+      return this.setState({
         ...this.state,
         [statusMethodName]: status
       });

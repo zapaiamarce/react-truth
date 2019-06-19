@@ -116,6 +116,10 @@ export default () => {
 
 Log react-truth internals to the console
 
+## Truth
+
+// TODO
+
 ## Redux devtools integration
 
 Too see what is happening in the state, just open your redux devtools panel.

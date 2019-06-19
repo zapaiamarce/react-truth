@@ -1,8 +1,7 @@
 import test from "ava";
 import React from "react";
 import Truth from "./";
-
-import render from "react-test-renderer";
+import { create, act } from "react-test-renderer";
 
 class State {
   value?: string = ""
@@ -26,25 +25,28 @@ class AppState extends Truth<State>{
   }
 }
 
-const createAppState = () => new AppState(new State(), {
-  actionsStatus: true,
-  persist: true,
-  debug: true
-})
-
 
 
 test.serial("basic, ", async t => {
-  t.plan(1);
-  const appState = createAppState();
+  const appState = new AppState(new State(), {
+    actionsStatus: true,
+    // persist: true,
+    debug: true,
+    id: "33"
+  });
 
+  await appState.promise
+  console.log("promise")
+  console.log(appState.getState())
   const Comp = () => {
     const [state, actions] = appState.useState();
     const { testAction } = actions
-    console.log("Comp", state)
+
     return (
       <div>
-        <button onClick={async () => await testAction("some value from comp action")}>{JSON.stringify(state)}</button>
+        <button onClick={async () => await testAction("some value from comp action")}>
+          {JSON.stringify(state)}
+        </button>
       </div>
     );
   };
@@ -64,24 +66,30 @@ test.serial("basic, ", async t => {
     );
   };
 
-  const comp = render.create(<App />);
+  let comp;
 
-  return new Promise((resolve, rej) =>
-    setTimeout(async () => {
-      t.log("*****TIMEOUT")
-      await comp.root.findAllByType("button")[1].props.onClick();
-      const tree = comp.toJSON();
-      t.log(appState.getState());
-      t.log(tree);
-      t.truthy(true);
-      resolve()
-    }, 100)
-  ) as any
+  act(() => {
+    comp = create(<App />);
+  })
+
+  await comp.root.findAllByType("button")[1].props.onClick();
+
+  const tree = comp.toJSON();
+  t.log(tree);
+
+  t.log(appState.getState())
+
+  t.truthy(true);
+
+  console.log("AAA")
 });
 
-// test.serial("persistance, ", async t => {
-//   const appState = createAppState();
-//   // t.log("get state", appState.getState());
-//   t.truthy(true)
-//   // t.snapshot(tree);
-// });
+
+test.serial("persistance, ", async t => {
+  console.log("BBB");
+  const appState = new AppState(new State(), { debug: false });
+  await appState.promise
+  t.truthy(true);
+  console.log("get state", appState.getState());
+  // t.snapshot(tree);
+});
