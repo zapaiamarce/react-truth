@@ -64,6 +64,7 @@ class Truth<State = any> {
     return this.state;
   }
   public useState(pick?: string[]): [State, this] {
+    // TODO finish pick
     const newListener = useState()[1];
     useEffect(() => {
       this.hooksListeners.push(newListener);
@@ -79,6 +80,7 @@ class Truth<State = any> {
     return this.state;
   }
   public withState(Com) {
+    // TODO add actions to props
     return props => <Com {...props} state={this.state} />;
   }
   public wrapMethods() {
