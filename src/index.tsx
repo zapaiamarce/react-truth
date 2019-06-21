@@ -27,9 +27,7 @@ class Truth<State = any> {
   private settings: Settings;
   private hooksListeners: any[] = [];
   private fireHooks() {
-    if (this.hooksListeners.length) {
-      this.debug("fireHooks()", this.hooksListeners.length);
-    }
+    this.debug("fireHooks()", this.hooksListeners.length);
     this.hooksListeners.forEach(listener => {
       listener(this.state);
     });
@@ -38,20 +36,15 @@ class Truth<State = any> {
   public async onLoad(): Promise<State> { return this.state }
   constructor(initialState: State = {} as any, settings: Settings = {}) {
     this.settings = defaults(settings, new Settings());
+    this.debug("constructor()");
 
     this.wrapMethods();
 
     /* Persistencia */
     const persitedState = this.getPersistedState();
     const initial = persitedState || initialState;
-    this.debug(
-      ":: constructor()",
-      persitedState ? "persisted" : "initialState"
-    );
-
-    this.promise = this.setState(initial).then(this.onLoad);
+    this.promise = this.setState(initial).then(this.onLoad.bind(this));
     this.log(INIT, null, null);
-
   }
   public debug(...params) {
     return this.settings.debug && console.log(`[truth ${this.settings.id}]`, ...params);
@@ -59,8 +52,9 @@ class Truth<State = any> {
   public async setState(newState) {
     this.debug("setState()", "\n", JSON.stringify(newState, null, "   "));
     this.fireHooks();
+    this.setStateRaw(newState)
     this.persistState();
-    return this.setStateRaw(newState);
+    return newState;
   }
   public setStateRaw(newState) {
     this.state = {
@@ -95,38 +89,43 @@ class Truth<State = any> {
 
     const dontWrap = ["constructor"];
     const objPrototype = Object.getPrototypeOf(this);
+
+    if (objPrototype.wrapped) { return; }
+
     const methods = Object.getOwnPropertyNames(objPrototype);
     const toBind = difference(methods, dontWrap);
 
     toBind.forEach(m => {
-      const method = objPrototype[m];
       this.setActionStatus(m, null);
-      objPrototype[m] = async (...args) => {
+      const method = objPrototype[m]
+      objPrototype[m] = async function (...args) {
         await this.setActionStatus(m, FIRED);
         this.log(m, args, FIRED);
         try {
-          const response = await method.apply(this, [...args]);
+          const response = await method.call(this, ...args);
           if (response) {
             await this.setState(response);
-            await this.setActionStatus(m, COMPLETED);
-            this.log(m, args, COMPLETED);
           }
+          this.log(m, args, COMPLETED);
+          await this.setActionStatus(m, COMPLETED);
+          return response
         } catch (error) {
           await this.setActionStatus(m, FAILED);
           this.log(m, args, FAILED);
           console.error(error);
+          return error;
         }
       };
-      // bind all methods just in case
-      objPrototype[m] = objPrototype[m].bind(this);
     });
+
+    objPrototype.wrapped = true;
   }
   public persistState() {
+    this.debug("persistState()");
     const { persist, persistPick, persistanceKey } = this.settings;
+    const all = !persistPick.length;
+    const stateToPersist = all ? this.state : pick(this.state, persistPick);
     if (persist) {
-      const all = !persistPick.length;
-      const stateToPersist = all ? this.state : pick(this.state, persistPick);
-      this.debug("persistState()");
       store.set(persistanceKey, stateToPersist);
     }
   }
@@ -158,7 +157,7 @@ class Truth<State = any> {
     }
   }
   public log(actionName, args, status) {
-    this.debug("log:status", actionName, status);
+    this.debug("log()", actionName, status);
     if (actionName === INIT && devTools) {
       devTools.init(this.state);
     } else if (devTools && actionName && status) {

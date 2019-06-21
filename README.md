@@ -82,6 +82,8 @@ Used to name the localStorage item. default.
 
 #### persistPick:string[] = null
 
+Keys of persisted state members
+
 #### actionsStatus:boolean = false
 
 Generate automatic values in the state for actions status: {actionName}Status
