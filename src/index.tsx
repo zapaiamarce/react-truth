@@ -32,8 +32,10 @@ class Truth<State = any> {
       listener(this.state);
     });
   }
-  public promise: any
-  public async onLoad(): Promise<State> { return this.state }
+  public promise: any;
+  public async onLoad(): Promise<State> {
+    return this.state;
+  }
   constructor(initialState: State = {} as any, settings: Settings = {}) {
     this.settings = defaults(settings, new Settings());
     this.debug("constructor()");
@@ -47,12 +49,18 @@ class Truth<State = any> {
     this.log(INIT, null, null);
   }
   public debug(...params) {
-    return this.settings.debug && console.log(`[truth ${this.settings.id}]`, ...params);
+    return (
+      this.settings.debug &&
+      console.log(`[truth ${this.settings.id}]`, ...params)
+    );
+  }
+  public getId() {
+    return this.settings.id;
   }
   public async setState(newState) {
     this.debug("setState()", "\n", JSON.stringify(newState, null, "   "));
+    this.setStateRaw(newState);
     this.fireHooks();
-    this.setStateRaw(newState)
     this.persistState();
     return newState;
   }
@@ -63,7 +71,7 @@ class Truth<State = any> {
     };
     return this.state;
   }
-  public useState(pick?: string[]): [State, this] {
+  public useState(pickKeys?: string[]): [State, this] {
     // TODO finish pick
     const newListener = useState()[1];
     useEffect(() => {
@@ -74,7 +82,8 @@ class Truth<State = any> {
         );
       };
     }, []);
-    return [this.state, this];
+    const substate = pickKeys ? pick(this.state, pickKeys) : this.state;
+    return [substate, this];
   }
   public getState(): State {
     return this.state;
@@ -92,15 +101,20 @@ class Truth<State = any> {
     const dontWrap = ["constructor"];
     const objPrototype = Object.getPrototypeOf(this);
 
-    if (objPrototype.wrapped) { return; }
+    if (objPrototype.wrapped) {
+      return;
+    }
 
     const methods = Object.getOwnPropertyNames(objPrototype);
     const toBind = difference(methods, dontWrap);
 
     toBind.forEach(m => {
       this.setActionStatus(m, null);
-      const method = objPrototype[m]
-      objPrototype[m] = async function (...args) {
+      const method = objPrototype[m];
+      objPrototype[m] = async function(...args) {
+        if (!this) {
+          throw `you cannot use an action method without the parent reference: Eg.: actions.${m}()`;
+        }
         await this.setActionStatus(m, FIRED);
         this.log(m, args, FIRED);
         try {
@@ -110,7 +124,7 @@ class Truth<State = any> {
           }
           this.log(m, args, COMPLETED);
           await this.setActionStatus(m, COMPLETED);
-          return response
+          return response;
         } catch (error) {
           await this.setActionStatus(m, FAILED);
           this.log(m, args, FAILED);

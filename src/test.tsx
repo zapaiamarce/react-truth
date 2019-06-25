@@ -1,92 +1,35 @@
 import test from "ava";
 import React from "react";
 import Truth from "./";
-import { create, act } from "react-test-renderer";
+import { create } from "react-test-renderer";
+import { renderHook, act } from "@testing-library/react-hooks";
 
 class State {
-  value?: string = ""
-  idState?: string = ""
-  a: number = 1
-  fromOnLoadAction?: boolean
+  value?: string = "";
+  idState?: string = "";
+  a: number = 1;
+  fromOnLoadAction?: boolean;
 }
 
-class AppState extends Truth<State>{
+class AppState extends Truth<State> {
   async onLoad(): Promise<State> {
     return {
       ...this.state,
       fromOnLoadAction: true
-    }
+    };
   }
   async testAction(newValue: string): Promise<State> {
     return {
       ...this.state,
-      a: 45,
+      a: 3,
       value: newValue
     };
   }
 }
 
-
-
-// test.serial("basic, ", async t => {
-//   // console.log(":::::::::::::::::::::::::::::::::::::::: AAA")
-//   const appState = new AppState(new State(), {
-//     actionsStatus: true,
-//     id: "33"
-//   });
-
-//   await appState.promise
-//   // console.log("promise", appState.promise)
-//   // console.log("after promise state", appState.getState())
-
-//   const Comp = () => {
-//     const [state, actions] = appState.useState();
-//     const { testAction } = actions
-
-//     return (
-//       <div>
-//         <button onClick={async () => testAction("some value from comp action")}>
-//           {JSON.stringify(state)}
-//         </button>
-//       </div>
-//     );
-//   };
-
-//   const Dummy = () => (
-//     <div>Dummy {Math.random()}</div>
-//   )
-
-
-//   const App = () => {
-//     return (
-//       <div>
-//         <Comp></Comp>
-//         <Dummy></Dummy>
-//         <Comp></Comp>
-//       </div>
-//     );
-//   };
-
-//   let comp;
-
-//   act(() => {
-//     comp = create(<App />);
-//   })
-
-//   await comp.root.findAllByType("button")[1].props.onClick();
-//   // console.log("after click state", appState.getState())
-
-//   const tree = comp.toJSON();
-//   // console.log(tree);
-//   // console.log("after print tree");
-
-//   t.truthy(true);
-// });
-
-
 test.serial("persistance, ", async t => {
-  const CHECK_VALUE = "persistance value"
-  const createState = (id) => new AppState({ a: 2 }, { persist: true, debug: false, id })
+  const CHECK_VALUE = Math.random().toString();
+  const createState = id => new AppState({ a: 2 }, { persist: true, id });
 
   const newAppState = createState("a");
   await newAppState.promise;
@@ -95,12 +38,29 @@ test.serial("persistance, ", async t => {
   const anotherAppState = createState("b");
   await anotherAppState.promise;
 
-  const cAppState = createState("c");
-  await cAppState.promise;
+  t.log(newAppState.getId());
+  t.log(anotherAppState.getId());
+  t.log(CHECK_VALUE);
 
-  console.log(newAppState.getState())
-  console.log(anotherAppState.getState())
-  console.log(cAppState.getState());
+  t.truthy(anotherAppState.getState().value == CHECK_VALUE);
+});
 
-  t.truthy(cAppState.getState().value == CHECK_VALUE);
+test.serial("pick", async t => {
+  const appState = new AppState({ a: 1 }, { actionsStatus: true });
+  await appState.promise;
+
+  const { result } = renderHook(() => appState.useState(["a"])[0]);
+  // const { result: res } = renderHook(() => appState.useState()[0]);
+
+  t.is(result.current.a, 1);
+
+  await appState.testAction("some value from comp action");
+
+  t.is(result.current.a, 3);
+
+  const pickedState = Object.keys(result.current);
+
+  t.is(pickedState.length, 1);
+  t.is(pickedState[0], "a");
+  t.truthy(true);
 });
