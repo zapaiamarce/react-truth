@@ -16,11 +16,11 @@ export class State {
 }
 
 export class Truth extends ReactTruth<State> {
-  public async onLoad() {
-    this.setState({
+  public async onLoad(): Promise<State> {
+    return {
       ...this.state,
       someValue: "mounted"
-    });
+    }
   }
   public async testAction(newValue): Promise<State> {
     // you can set the state any time you need
