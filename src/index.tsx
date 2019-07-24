@@ -88,9 +88,27 @@ class Truth<State = any> {
   public getState(): State {
     return this.state;
   }
-  public withState(Com) {
-    // TODO add actions to props
-    return props => <Com {...props} state={this.state} />;
+  public stateResolver(state: State): any {
+    return state;
+  }
+  public async getActions() {
+    // TODO: finish this
+    const dontWrap = ["constructor", "wrapped"];
+    const objPrototype = Object.getPrototypeOf(this);
+    const methods = Object.getOwnPropertyNames(objPrototype);
+    const toBind = difference(methods, dontWrap);
+    const justActions = pick(this, toBind)
+    Object.setPrototypeOf(justActions, this)
+    await justActions.testAction("lalala")
+    console.log(justActions)
+    return this;
+  }
+  public withState(
+    Com,
+    stateResolver = this.stateResolver
+  ) {
+    const stateProps = stateResolver(this.state);
+    return props => <Com {...props} {...stateProps} actions={this} />;
   }
   public wrapMethods() {
     /* wrapea todos los metodos (externos)
@@ -107,7 +125,7 @@ class Truth<State = any> {
 
     const methods = Object.getOwnPropertyNames(objPrototype);
     const toBind = difference(methods, dontWrap);
-
+    
     toBind.forEach(m => {
       this.setActionStatus(m, null);
       const method = objPrototype[m];

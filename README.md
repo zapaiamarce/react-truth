@@ -118,9 +118,31 @@ export default () => {
 
 Log react-truth internals to the console
 
-## Truth
+## Truth Class
 
-// TODO
+Any Truth instance has this methods to use or override
+
+#### onLoad(): Promise<State>
+
+Is executed right when the Truth instance is created
+
+#### setState(newState): Promise<State>
+
+Set the state with a new one. It´s async.
+
+#### setStateRaw(newState): Promise<State>
+
+A sync state setter.
+
+#### useState(pick:string[]): [State, actions]
+
+React hook to plug a component to the state. A list of picked members of the state can be passed as unique param.
+
+#### withState(Component: ReactComponent, stateResolver: (state)=> newState): ReactComponent
+HOC to inject the state as props and the actions as **action** prop. 
+A subset of the state can bi picked using a stateResolver
+
+
 
 ## Redux devtools integration
 

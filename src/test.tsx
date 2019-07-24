@@ -64,3 +64,20 @@ test.serial("pick", async t => {
   t.is(pickedState[0], "a");
   t.truthy(true);
 });
+
+test.serial("hoc", async t => {
+  const appState = new AppState({ a: 1, value: "some value" });
+  await appState.promise;
+
+  const BaseComp = props => (
+    <div>
+      <button onClick={props.testAction} />
+      {JSON.stringify(props)}
+    </div>
+  )
+  const NewComp = appState.withState(BaseComp, state => ({
+    a: state.a
+  }));
+  const renderer = create(<NewComp />);
+  t.snapshot(renderer.toJSON());
+});
