@@ -130,7 +130,7 @@ Is executed right when the Truth instance is created
 
 Set the state with a new one. It´s async.
 
-#### setStateRaw(newState): Promise<State>
+#### setStateRaw(newState): State
 
 A sync state setter.
 
