@@ -189,7 +189,7 @@ class Truth<State = any> {
   }
   public async setActionStatus(methodName, status) {
     const { actionsStatus } = this.settings;
-    if (actionsStatus) {
+    if (actionsStatus && this.state) {
       const currentStatus = this.state._status || {};
       return this.setState({
         ...this.state,
