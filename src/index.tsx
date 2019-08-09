@@ -1,4 +1,4 @@
-import { defaults, difference, pick } from "lodash";
+import { defaults, difference, pick, omit } from "lodash";
 import React, { useState, useEffect } from "react";
 import store from "store";
 
@@ -18,12 +18,18 @@ class Settings {
 }
 
 export const INIT = "INIT";
+
+// Statuses
 export const FIRED = "FIRED";
 export const COMPLETED = "COMPLETED";
 export const FAILED = "FAILED";
 
+interface TruthState {
+  _status?: any;
+}
+
 class Truth<State = any> {
-  protected state: State;
+  protected state: State & TruthState;
   private settings: Settings;
   private hooksListeners: any[] = [];
   private fireHooks() {
@@ -36,6 +42,7 @@ class Truth<State = any> {
   public async onLoad(): Promise<State> {
     return this.state;
   }
+
   constructor(initialState: State = {} as any, settings: Settings = {}) {
     this.settings = defaults(settings, new Settings());
     this.debug("constructor()");
@@ -97,16 +104,13 @@ class Truth<State = any> {
     const objPrototype = Object.getPrototypeOf(this);
     const methods = Object.getOwnPropertyNames(objPrototype);
     const toBind = difference(methods, dontWrap);
-    const justActions = pick(this, toBind)
-    Object.setPrototypeOf(justActions, this)
-    await justActions.testAction("lalala")
-    console.log(justActions)
+    const justActions = pick(this, toBind);
+    Object.setPrototypeOf(justActions, this);
+    await justActions.testAction("lalala");
+    console.log(justActions);
     return this;
   }
-  public withState(
-    Com,
-    stateResolver = this.stateResolver
-  ) {
+  public withState(Com, stateResolver = this.stateResolver) {
     const stateProps = stateResolver(this.state);
     return props => <Com {...props} {...stateProps} actions={this} />;
   }
@@ -125,7 +129,7 @@ class Truth<State = any> {
 
     const methods = Object.getOwnPropertyNames(objPrototype);
     const toBind = difference(methods, dontWrap);
-    
+
     toBind.forEach(m => {
       this.setActionStatus(m, null);
       const method = objPrototype[m];
@@ -155,12 +159,15 @@ class Truth<State = any> {
     objPrototype.wrapped = true;
   }
   public persistState() {
-    this.debug("persistState()");
     const { persist, persistPick, persistanceKey } = this.settings;
-    const all = !persistPick.length;
-    const stateToPersist = all ? this.state : pick(this.state, persistPick);
     if (persist) {
-      store.set(persistanceKey, stateToPersist);
+      this.debug("persistState()");
+      const all = !persistPick.length;
+      const stateToPersist = all ? this.state : pick(this.state, persistPick);
+      const pruned = omit(stateToPersist, ["_status"]);
+      store.set(persistanceKey, pruned);
+    } else {
+      this.debug("persist is not enable");
     }
   }
   public getPersistedState() {
@@ -183,10 +190,13 @@ class Truth<State = any> {
   public async setActionStatus(methodName, status) {
     const { actionsStatus } = this.settings;
     if (actionsStatus) {
-      const statusMethodName = methodName + "Status";
+      const currentStatus = this.state._status || {};
       return this.setState({
         ...this.state,
-        [statusMethodName]: status
+        _status: {
+          ...currentStatus,
+          [methodName]: status
+        }
       });
     }
   }

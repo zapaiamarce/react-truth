@@ -86,24 +86,47 @@ Keys of persisted state members
 
 #### actionsStatus:boolean = false
 
-Generate automatic values in the state for actions status: {actionName}Status
+Generate automatic values in the state for actions status: state._status[actionName]
+A **_status** member need to be declared in the state.
 
 ```jsx
-import { useState } from "./state";
+// ...
+export class State {
+  data: object;
+
+  // add this member to your State
+  _status: any;
+}
+
+export class Truth extends ReactTruth<State> {
+  public async apiCall(): Promise<State> {
+    const res = await fetch("http://api.truth.com/v1/");
+    const data = await res.json();
+    return {
+      ...this.state,
+      data
+    };
+  }
+}
+// ...
+```
+
+```jsx
+import state from "./state";
 import { FIRED, FAILED, COMPLETED } from "react-truth";
 
 export default () => {
-  const [state, actions] = useState();
+  const [state, actions] = state.useState();
   const handleClick = () => actions.apiCall(Math.random());
 
   return (
     <div>
       <button onClick={handleClick}>
-        {state.apiCallStatus == FIRED ? (
+        {state._status.apiCall == FIRED ? (
           <span>The api call is happening</span>
-        ) : state.apiCallStatus == FAILED ? (
+        ) : state._status.apiCall == FAILED ? (
           <span>Something went wrong</span>
-        ) : state.apiCallStatus == COMPLETED ? (
+        ) : state._status.apiCall == COMPLETED ? (
           <span>Everything went ok!</span>
         ) : (
           <span>nothing happens yet</span>
