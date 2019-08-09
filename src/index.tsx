@@ -42,7 +42,6 @@ class Truth<State = any> {
   public async onLoad(): Promise<State> {
     return this.state;
   }
-
   constructor(initialState: State = {} as any, settings: Settings = {}) {
     this.settings = defaults(settings, new Settings());
     this.debug("constructor()");
@@ -51,14 +50,16 @@ class Truth<State = any> {
 
     /* Persistencia */
     const persitedState = this.getPersistedState();
+    this.debug("constructor() persitedState", persitedState);
     const initial = persitedState || initialState;
+    this.debug("constructor() initial", initial);
     this.promise = this.setState(initial).then(this.onLoad.bind(this));
     this.log(INIT, null, null);
   }
   public debug(...params) {
     return (
       this.settings.debug &&
-      console.log(`[truth ${this.settings.id}]`, ...params)
+      console.log(`[truth-${this.settings.id}]`, ...params)
     );
   }
   public getId() {

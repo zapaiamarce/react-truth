@@ -39,9 +39,7 @@
   },
   "peerDependencies": {
     "@types/react": ">=16.8.0",
-    "lodash": "^4.17.15",
-    "react": ">=16.8.0",
-    "store": "^2.0.12"
+    "react": ">=16.8.0"
   },
   "dependencies": {
     "lodash": "^4.17.15",
