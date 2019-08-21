@@ -3,6 +3,17 @@ import React from "react";
 import Truth, { INIT, FIRED, COMPLETED } from "./";
 import { create } from "react-test-renderer";
 import { renderHook, act } from "@testing-library/react-hooks";
+import { isMatch } from "lodash";
+
+class GrandChild {
+  grandChildList: string[] = ["first"];
+}
+
+class Child {
+  textMember: string = "";
+  intMember: number;
+  grandChild: GrandChild = new GrandChild();
+}
 
 class State {
   value?: string = "";
@@ -10,6 +21,7 @@ class State {
   a: number = 1;
   fromOnLoadAction?: boolean;
   _status?: any;
+  child?: Child = new Child();
 }
 
 class AppState extends Truth<State> {
@@ -22,9 +34,13 @@ class AppState extends Truth<State> {
   async testAction(newValue: string): Promise<State> {
     return {
       ...this.state,
-      a: 3,
       value: newValue
     };
+  }
+  async actionWithoutReturnValue(value) {
+    this.setState({
+      value
+    });
   }
 }
 
@@ -57,8 +73,6 @@ test.serial("pick", async t => {
 
   await appState.testAction("some value from comp action");
 
-  t.is(result.current.a, 3);
-
   const pickedState = Object.keys(result.current);
 
   t.is(pickedState.length, 1);
@@ -84,7 +98,7 @@ test.serial("hoc", async t => {
 });
 
 test.serial("status", async t => {
-  t.plan(2)
+  t.plan(2);
   const appState = new AppState(
     { a: 1 },
     { actionsStatus: true, persist: true }
@@ -98,4 +112,65 @@ test.serial("status", async t => {
   return promise.then(() => {
     t.truthy(appState.getState()._status.testAction == COMPLETED);
   });
+});
+
+test("deep initial state", async t => {
+  const initialState = new State();
+  const now = new Date();
+  const persistanceKey = now.getUTCDate() + "" + now.getUTCMonth();
+  const appState = new AppState(initialState, {
+    actionsStatus: true,
+    persist: true,
+    persistanceKey
+  });
+  await appState.promise;
+  await appState.testAction("test");
+  const currentState = appState.getState();
+
+  t.truthy(currentState.child.grandChild.grandChildList[0]);
+
+  t.truthy(
+    isMatch(currentState, {
+      ...initialState,
+      value: "test"
+    })
+  );
+});
+
+test("action without return value", async t => {
+  const initialState = new State();
+  const now = new Date();
+  const persistanceKey = now.getUTCDate() + "" + now.getUTCMonth();
+
+  const appState = new AppState(initialState, {
+    actionsStatus: true,
+    persist: true,
+    persistanceKey
+  });
+  await appState.promise;
+
+
+  // test impact and shape
+  let TEST_VALUE = "asdasd";
+  await appState.testAction(TEST_VALUE);
+  let currentState = appState.getState();
+  t.is(currentState.value, TEST_VALUE);
+  t.truthy(
+    isMatch(currentState, {
+      ...initialState,
+      value: TEST_VALUE
+    })
+  );
+  
+  // test impact and shape
+  TEST_VALUE = "123123131";
+  await appState.actionWithoutReturnValue(TEST_VALUE);
+  currentState = appState.getState();
+  t.is(currentState.value, TEST_VALUE);
+  t.truthy(
+    isMatch(currentState, {
+      ...initialState,
+      value: TEST_VALUE
+    })
+  );
 });
