@@ -1,10 +1,52 @@
-![Logo](https://res.cloudinary.com/iunigo/image/upload/c_scale,q_100,w_200/v1559334903/react-truth/React_Truth_color.png)
+# Truth
 
 A tiny state manager.
 
 [![CircleCI](https://circleci.com/gh/zapaiamarce/react-truth.svg?style=shield)](https://circleci.com/gh/zapaiamarce/react-truth) [![npm](https://img.shields.io/npm/v/react-truth/latest.svg?color=brightgreen)](https://www.npmjs.com/package/react-truth)
 
-### Step 1: Create a truth instance
+## Setup
+`yarn add react-truth`
+
+## Basic use
+
+```jsx
+// state.js
+import ReactTruth from "react-truth";
+
+export class MyTruth extends ReactTruth {
+  public async fetchData(){
+    const res = await fetch("https://myapi.com/data");
+    const data = await res.json();
+    return {
+      ...this.state,
+      data
+    }
+  }
+  // more actions ...
+}
+
+export default new MyTruth();
+```
+
+```jsx
+// Component.js
+import appState from "./state";
+
+export default () => {
+  const [state, actions] = appState.useState();
+  const handleClick = () => actions.fetchUser();
+
+  return (
+    <>
+      <button onClick={handleClick}>Fetch Data</button>  
+      <div>Data: {JSON.stringify(state.data)}</div> 
+    </>
+  );
+};
+```
+
+
+### Advanced (Typescript)
 
 ```jsx
 // state.tsx
@@ -15,7 +57,7 @@ export class State {
   anotherValue?: string;
 }
 
-export class Truth extends ReactTruth<State> {
+export class MyTruth extends ReactTruth<State> {
   public async onLoad(): Promise<State> {
     return {
       ...this.state,
@@ -45,12 +87,10 @@ const settings = {
   actionsStatus: true
 };
 
-export const myTruth = new Truth(initialState, settings);
+export const myTruth = new MyTruth(initialState, settings);
 
 export default myTruth;
 ```
-
-### Step 2: Hook your components.
 
 ```jsx
 // Component.tsx
@@ -98,7 +138,7 @@ export class State {
   _status: any;
 }
 
-export class Truth extends ReactTruth<State> {
+export class MyTruth extends ReactTruth<State> {
   public async apiCall(): Promise<State> {
     const res = await fetch("http://api.truth.com/v1/");
     const data = await res.json();
