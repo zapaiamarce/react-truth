@@ -5,6 +5,7 @@ A tiny state manager.
 [![CircleCI](https://circleci.com/gh/zapaiamarce/react-truth.svg?style=shield)](https://circleci.com/gh/zapaiamarce/react-truth) [![npm](https://img.shields.io/npm/v/react-truth/latest.svg?color=brightgreen)](https://www.npmjs.com/package/react-truth)
 
 ## Setup
+
 `yarn add react-truth`
 
 ## Basic use

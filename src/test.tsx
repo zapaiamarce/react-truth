@@ -2,7 +2,7 @@ import test from "ava";
 import React from "react";
 import Truth, { INIT, FIRED, COMPLETED } from "./";
 import { create } from "react-test-renderer";
-import { renderHook, act } from "@testing-library/react-hooks";
+import { renderHook } from "@testing-library/react-hooks";
 import { isMatch } from "lodash";
 
 class GrandChild {
