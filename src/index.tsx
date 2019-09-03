@@ -144,10 +144,10 @@ class Truth<State = any> {
           const response = await method.call(this, ...args);
           if (response) {
             await this.setState(response);
+            this.log(m, args, COMPLETED);
+            await this.setActionStatus(m, COMPLETED);
+            return response;
           }
-          this.log(m, args, COMPLETED);
-          await this.setActionStatus(m, COMPLETED);
-          return response;
         } catch (error) {
           await this.setActionStatus(m, FAILED);
           this.log(m, args, FAILED);
