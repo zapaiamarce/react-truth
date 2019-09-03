@@ -35,11 +35,10 @@ import appState from "./state";
 
 export default () => {
   const [state, actions] = appState.useState();
-  const handleClick = () => actions.fetchUser();
 
   return (
     <>
-      <button onClick={handleClick}>Fetch Data</button>  
+      <button onClick={actions.fetchUser}>Fetch Data</button>  
       <div>Data: {JSON.stringify(state.data)}</div> 
     </>
   );
@@ -47,7 +46,7 @@ export default () => {
 ```
 
 
-### Advanced (Typescript)
+## Advanced (Typescript)
 
 ```jsx
 // state.tsx
