@@ -152,7 +152,7 @@ class Truth<State = any> {
           await this.setActionStatus(m, FAILED);
           this.log(m, args, FAILED);
           console.error(error);
-          return error;
+          throw error;
         }
       };
     });
