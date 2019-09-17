@@ -35,6 +35,8 @@ class Truth<State = any> {
   private fireHooks() {
     this.debug("fireHooks()", this.hooksListeners.length);
     this.hooksListeners.forEach(listener => {
+      // send the new state to the listener is necesary because 
+      // it has to be different to the previous one
       listener(this.state);
     });
   }
@@ -81,16 +83,17 @@ class Truth<State = any> {
   }
   public useState(pickKeys?: string[]): [State, this] {
     // TODO finish pick
-    const newListener = useState()[1];
+    const newListener = useState({})[1];
+    const substate = pickKeys ? pick(this.state, pickKeys) : this.state;
     useEffect(() => {
       this.hooksListeners.push(newListener);
+      newListener(this.state);
       return () => {
         this.hooksListeners = this.hooksListeners.filter(
           listener => listener !== newListener
         );
       };
     }, []);
-    const substate = pickKeys ? pick(this.state, pickKeys) : this.state;
     return [substate, this];
   }
   public getState(): State {
@@ -144,8 +147,8 @@ class Truth<State = any> {
           const response = await method.call(this, ...args);
           if (response) {
             await this.setState(response);
-            this.log(m, args, COMPLETED);
             await this.setActionStatus(m, COMPLETED);
+            this.log(m, args, COMPLETED);
             return response;
           }
         } catch (error) {
