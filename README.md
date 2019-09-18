@@ -209,4 +209,4 @@ A subset of the state can bi picked using a stateResolver
 
 ## Redux devtools integration
 
-Too see what is happening in the state, just open your redux devtools panel.
+Check what is happening in the state in the **[redux devtools](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=es)**.
